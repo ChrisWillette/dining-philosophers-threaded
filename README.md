@@ -1,0 +1,1 @@
+threaded version of dining philosophers problem.
