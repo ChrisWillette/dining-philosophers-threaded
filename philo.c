@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <random_r.h>
-
+#include <unistd.h>
 
 #define NUM_PHILOS 5
 #define MAX_EAT_TIME 100
@@ -36,7 +36,6 @@ int thinkTime(unsigned int person){
 void* philosophize(void* arg){
     int philoNum = *(int *)arg;
     unsigned int philo_u  = *(unsigned int *)arg;
-
     int totalEatTime = 0;
     int eatClock;
     int thinkClock;
@@ -50,22 +49,28 @@ void* philosophize(void* arg){
 	rightStick = philoNum;
     }
 
-    while(totalEatTime < 100){
+    while(totalEatTime < MAX_EAT_TIME){
+
+	thinkClock = thinkTime(philo_u);
+	sleep(thinkClock);
+	printf("\nPhilosopher %d now thinking for %d seconds.",
+	       philoNum+1, thinkClock);
+
+
 	//grab chopsticks
         pthread_mutex_lock(&chopSticks[leftStick]);
         pthread_mutex_lock(&chopSticks[rightStick]);
 	//eat
 	eatClock = eatTime(philo_u);
 	sleep(eatClock);
+	printf("\nPhilosopher %d now eating for %d seconds.", 
+	       philoNum+1, eatClock);
+	totalEatTime = totalEatTime + eatClock;
+
         pthread_mutex_unlock(&chopSticks[leftStick]);
         pthread_mutex_unlock(&chopSticks[rightStick]);
-
-	thinkClock = thinkTime(philo_u);
-	totalEatTime = totalEatTime + eatClock;
-	printf("\nPhilosopher %d now thinking for %d seconds.",
-	       philoNum+1, thinkClock);
     }
-    printf("\nPhilosopher %d has left the building.\n", philoNum);
+    printf("\nPhilosopher %d has left the building.\n", philoNum+1);
     return NULL;
 }
 
@@ -77,10 +82,10 @@ int main(){
         philos[i].id = i;
     }
     for(i=0;i<NUM_PHILOS;i++){
-        pthread_create(&philos[i],NULL,(void *)philosophize,(void *)&philos[i].id);
+        pthread_create(&philos[i].thread,NULL, philosophize,(void *)&philos[i].id);
     }
     for(i=0;i<NUM_PHILOS;i++){
-        pthread_join(philos[i],NULL);
+        pthread_join(philos[i].thread,NULL);
     }
     for(i=0;i<NUM_PHILOS;i++){
         pthread_mutex_destroy(&chopSticks[i]);
