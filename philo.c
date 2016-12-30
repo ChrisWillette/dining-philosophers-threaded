@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-#include <random_r.h>
+#include "random_r.h"
 #include <unistd.h>
 
 #define NUM_PHILOS 5
